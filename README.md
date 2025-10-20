@@ -1,11 +1,6 @@
 # Initial Setup - Fullstack Project
 
----
-
-Backend[#Backend]
-Frontend[#Frontend]
-
----
+**[🚀 Backend](#backend)** • **[🎨 Frontend](#frontend)** • **[🏃 Quick Start](#quick-start)**
 
 Setup inicial com **Next.js 15** + **Express** + **Prisma** + **TypeScript**.
 
