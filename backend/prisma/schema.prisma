@@ -13,3 +13,56 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Usuarios {
+  id         String      @id @default(uuid())
+  nome       String
+  email      String      @unique
+  pin        String
+  avaliacoes Avaliacao[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@map("usuarios")
+}
+
+model Restaurantes {
+  id             String      @id @default(uuid())
+  nome           String
+  imagem         String?
+  qtd_avaliacoes Int         @default(0)
+  nota           Float       @default(0)
+  enderecoId     String?     @unique
+  endereco       Endereco?   @relation(fields: [enderecoId], references: [id])
+  avaliacoes     Avaliacao[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("restaurantes")
+}
+
+model Endereco {
+  id           String        @id @default(uuid())
+  lat          Float
+  log          Float
+  display_name String
+  restaurante  Restaurantes?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("enderecos")
+}
+
+model Avaliacao {
+  id            String       @id @default(uuid())
+  nota          Int
+  comentario    String?
+  usuarioId     String
+  usuario       Usuarios     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  restauranteId String
+  restaurante   Restaurantes @relation(fields: [restauranteId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("avaliacoes")
+}
