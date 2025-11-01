@@ -60,7 +60,7 @@ export default function AddRestaurantPage() {
       <div className="max-w-4xl mx-auto">
         <Button
           variant="ghost"
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/home")}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
