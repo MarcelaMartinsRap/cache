@@ -5,6 +5,7 @@ const router = Router();
 
 router.get("/", produtosController.listProdutos);
 router.get("/:id", produtosController.getProdutoById);
+router.get("/:id/fast", produtosController.getProdutoByIdFast); // Com cache Redis
 router.post("/", produtosController.createProduto);
 router.put("/:id", produtosController.updateProduto);
 router.delete("/:id", produtosController.deleteProduto);
