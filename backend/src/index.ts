@@ -1,8 +1,5 @@
 import express from "express";
-import usuariosRouter from "./routes/usuarios.routes";
-import restaurantesRouter from "./routes/restaurantes.routes";
-import avaliacoesRouter from "./routes/avaliacoes.routes";
-import enderecoRouter from "./routes/endereco.routes";
+import produtosRouter from "./routes/produtos.routes.js";
 
 const app = express();
 
@@ -12,10 +9,7 @@ app.get("/", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.use("/api/usuarios", usuariosRouter);
-app.use("/api/restaurantes", restaurantesRouter);
-app.use("/api/avaliacoes", avaliacoesRouter);
-app.use("/api/endereco", enderecoRouter);
+app.use("/api/produtos", produtosRouter);
 
 const port = Number(process.env.PORT || 3001);
 app.listen(port, () => {

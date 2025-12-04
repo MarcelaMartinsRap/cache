@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -14,55 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Usuarios {
-  id         String      @id @default(uuid())
-  nome       String
-  email      String      @unique
-  pin        String
-  avaliacoes Avaliacao[]
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+model Produto {
+  id          String   @id @default(uuid())
+  nome        String
+  descricao   String?
+  preco       Float
+  foto        String?
+  notaGeral   Float    @default(0)
+  qtdAvaliacoes Int    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@map("usuarios")
+  avaliacoes AvaliacaoProduto[]
+
+  @@map("produtos")
 }
 
-model Restaurantes {
-  id             String      @id @default(uuid())
-  nome           String
-  imagem         String?
-  qtd_avaliacoes Int         @default(0)
-  nota           Float       @default(0)
-  enderecoId     String?     @unique
-  endereco       Endereco?   @relation(fields: [enderecoId], references: [id])
-  avaliacoes     Avaliacao[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+model AvaliacaoProduto {
+  id         String   @id @default(uuid())
+  nota       Int
+  comentario String?
+  produtoId  String
+  createdAt  DateTime @default(now())
 
-  @@map("restaurantes")
-}
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
 
-model Endereco {
-  id           String        @id @default(uuid())
-  lat          Float
-  log          Float
-  display_name String
-  restaurante  Restaurantes?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-
-  @@map("enderecos")
-}
-
-model Avaliacao {
-  id            String       @id @default(uuid())
-  nota          Int
-  comentario    String?
-  usuarioId     String
-  usuario       Usuarios     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  restauranteId String
-  restaurante   Restaurantes @relation(fields: [restauranteId], references: [id], onDelete: Cascade)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  @@map("avaliacoes")
+  @@map("avaliacoes_produtos")
 }
