@@ -2,11 +2,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const TOTAL_PRODUTOS = 1_000_000;
-const PRODUTOS_VIRAIS = 2; 
-const AVALIACOES_POR_VIRAL = 1_000_000;
-const BATCH_SIZE_PRODUTOS = 10_000;
-const BATCH_SIZE_AVALIACOES = 10_000;
+const TOTAL_PRODUTOS = 50_000;
+const PRODUTOS_VIRAIS = 1;
+const AVALIACOES_POR_VIRAL = 50_000;
+const BATCH_SIZE_PRODUTOS = 5_000;
+const BATCH_SIZE_AVALIACOES = 5_000;
 
 const comentariosExemplo = [
   "Produto excelente! Recomendo muito.",
@@ -30,15 +30,45 @@ const comentariosExemplo = [
 ];
 
 const nomesBase = [
-  "Smartphone", "Notebook", "Tablet", "Fone de Ouvido", "Smart TV",
-  "Câmera", "Console", "Monitor", "Teclado", "Mouse", "Caixa de Som",
-  "Smartwatch", "Carregador", "Cabo USB", "Webcam", "Microfone",
-  "HD Externo", "SSD", "Memória RAM", "Placa de Vídeo", "Processador",
+  "Smartphone",
+  "Notebook",
+  "Tablet",
+  "Fone de Ouvido",
+  "Smart TV",
+  "Câmera",
+  "Console",
+  "Monitor",
+  "Teclado",
+  "Mouse",
+  "Caixa de Som",
+  "Smartwatch",
+  "Carregador",
+  "Cabo USB",
+  "Webcam",
+  "Microfone",
+  "HD Externo",
+  "SSD",
+  "Memória RAM",
+  "Placa de Vídeo",
+  "Processador",
 ];
 
 const marcas = [
-  "Samsung", "Apple", "Xiaomi", "LG", "Sony", "Dell", "HP", "Lenovo",
-  "Asus", "Acer", "JBL", "Logitech", "Razer", "HyperX", "Corsair",
+  "Samsung",
+  "Apple",
+  "Xiaomi",
+  "LG",
+  "Sony",
+  "Dell",
+  "HP",
+  "Lenovo",
+  "Asus",
+  "Acer",
+  "JBL",
+  "Logitech",
+  "Razer",
+  "HyperX",
+  "Corsair",
 ];
 
 function randomNota(): number {
@@ -53,7 +83,10 @@ function randomNota(): number {
 }
 
 function randomComentario(): string | null {
-  return comentariosExemplo[Math.floor(Math.random() * comentariosExemplo.length)] ?? null;
+  return (
+    comentariosExemplo[Math.floor(Math.random() * comentariosExemplo.length)] ??
+    null
+  );
 }
 
 function randomNomeProduto(index: number): string {
@@ -88,10 +121,15 @@ async function criarProdutosEmMassa() {
 
     await prisma.produto.createMany({ data: produtos });
 
-    const progress = ((batch + 1) * BATCH_SIZE_PRODUTOS / TOTAL_PRODUTOS * 100).toFixed(1);
+    const progress = (
+      (((batch + 1) * BATCH_SIZE_PRODUTOS) / TOTAL_PRODUTOS) *
+      100
+    ).toFixed(1);
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     const inserted = (batch + 1) * BATCH_SIZE_PRODUTOS;
-    console.log(`   [${progress}%] ${inserted.toLocaleString()} produtos - ${elapsed}s`);
+    console.log(
+      `   [${progress}%] ${inserted.toLocaleString()} produtos - ${elapsed}s`
+    );
   }
 
   console.log(`✅ ${TOTAL_PRODUTOS.toLocaleString()} produtos criados!`);
@@ -106,7 +144,8 @@ async function criarProdutosVirais() {
     const produto = await prisma.produto.create({
       data: {
         nome: `🔥 VIRAL ${i + 1} - iPhone 15 Pro Max 256GB - MAIS VENDIDO`,
-        descricao: "O smartphone mais desejado do momento! Câmera profissional, chip A17 Pro.",
+        descricao:
+          "O smartphone mais desejado do momento! Câmera profissional, chip A17 Pro.",
         preco: 9499.99,
         foto: `https://example.com/viral-${i + 1}.jpg`,
         notaGeral: 0,
@@ -120,13 +159,23 @@ async function criarProdutosVirais() {
   return produtosVirais;
 }
 
-async function criarAvaliacoesParaProduto(produtoId: string, produtoNome: string, numero: number) {
-  console.log(`\n📝 Inserindo ${AVALIACOES_POR_VIRAL.toLocaleString()} avaliações para produto viral ${numero}...`);
-  
+async function criarAvaliacoesParaProduto(
+  produtoId: string,
+  produtoNome: string,
+  numero: number
+) {
+  console.log(
+    `\n📝 Inserindo ${AVALIACOES_POR_VIRAL.toLocaleString()} avaliações para produto viral ${numero}...`
+  );
+
   let totalNotas = 0;
   const startTime = Date.now();
 
-  for (let batch = 0; batch < AVALIACOES_POR_VIRAL / BATCH_SIZE_AVALIACOES; batch++) {
+  for (
+    let batch = 0;
+    batch < AVALIACOES_POR_VIRAL / BATCH_SIZE_AVALIACOES;
+    batch++
+  ) {
     const avaliacoes = [];
 
     for (let i = 0; i < BATCH_SIZE_AVALIACOES; i++) {
@@ -141,10 +190,15 @@ async function criarAvaliacoesParaProduto(produtoId: string, produtoNome: string
 
     await prisma.avaliacaoProduto.createMany({ data: avaliacoes });
 
-    const progress = ((batch + 1) * BATCH_SIZE_AVALIACOES / AVALIACOES_POR_VIRAL * 100).toFixed(1);
+    const progress = (
+      (((batch + 1) * BATCH_SIZE_AVALIACOES) / AVALIACOES_POR_VIRAL) *
+      100
+    ).toFixed(1);
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     const inserted = (batch + 1) * BATCH_SIZE_AVALIACOES;
-    console.log(`   [${progress}%] ${inserted.toLocaleString()} avaliações - ${elapsed}s`);
+    console.log(
+      `   [${progress}%] ${inserted.toLocaleString()} avaliações - ${elapsed}s`
+    );
   }
 
   const notaGeral = Number((totalNotas / AVALIACOES_POR_VIRAL).toFixed(2));
@@ -161,8 +215,14 @@ async function main() {
   console.log("=".repeat(60));
   console.log(`📦 Total de produtos: ${TOTAL_PRODUTOS.toLocaleString()}`);
   console.log(`🔥 Produtos virais: ${PRODUTOS_VIRAIS}`);
-  console.log(`📝 Avaliações por viral: ${AVALIACOES_POR_VIRAL.toLocaleString()}`);
-  console.log(`📊 Total de avaliações: ${(PRODUTOS_VIRAIS * AVALIACOES_POR_VIRAL).toLocaleString()}`);
+  console.log(
+    `📝 Avaliações por viral: ${AVALIACOES_POR_VIRAL.toLocaleString()}`
+  );
+  console.log(
+    `📊 Total de avaliações: ${(
+      PRODUTOS_VIRAIS * AVALIACOES_POR_VIRAL
+    ).toLocaleString()}`
+  );
   console.log("=".repeat(60));
 
   const startTotal = Date.now();
@@ -186,16 +246,26 @@ async function main() {
   console.log("\n" + "=".repeat(60));
   console.log("✅ STRESS TEST SEED COMPLETO!");
   console.log("=".repeat(60));
-  console.log(`📦 Produtos criados: ${(TOTAL_PRODUTOS + PRODUTOS_VIRAIS).toLocaleString()}`);
-  console.log(`📝 Avaliações criadas: ${(PRODUTOS_VIRAIS * AVALIACOES_POR_VIRAL).toLocaleString()}`);
+  console.log(
+    `📦 Produtos criados: ${(
+      TOTAL_PRODUTOS + PRODUTOS_VIRAIS
+    ).toLocaleString()}`
+  );
+  console.log(
+    `📝 Avaliações criadas: ${(
+      PRODUTOS_VIRAIS * AVALIACOES_POR_VIRAL
+    ).toLocaleString()}`
+  );
   console.log(`⏱️  Tempo total: ${totalTime} minutos`);
   console.log("=".repeat(60));
-  
+
   console.log("\n🧪 TESTE OS ENDPOINTS:");
   for (const pv of produtosVirais) {
     console.log(`   GET http://localhost:3000/api/produtos/${pv.id}`);
   }
-  console.log("\n⚠️  ATENÇÃO: O GET dos produtos virais vai trazer 1M de avaliações!");
+  console.log(
+    "\n⚠️  ATENÇÃO: O GET dos produtos virais vai trazer 1M de avaliações!"
+  );
 }
 
 main()
