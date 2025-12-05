@@ -1,13 +1,16 @@
 import type { Request, Response } from "express";
 import * as produtosService from "../services/produtos.service.js";
-import { getCache, setCache, CACHE_KEYS } from "../services/cache.service.js";
+import { getCache, setCache } from "../services/cache.service.js";
 
 export async function getProdutoById(
   req: Request<{ id: string }>,
   res: Response
 ) {
+  const { id } = req.params;
+  const timer = `[SEM CACHE] Produto ${id}`;
+  console.time(timer);
+
   try {
-    const { id } = req.params;
     const produto = await produtosService.getProdutoById(id);
 
     if (!produto) {
@@ -38,31 +41,55 @@ export async function getProdutoById(
       ),
     };
 
+    console.timeEnd(timer);
     res.json(response);
   } catch (error) {
+    console.timeEnd(timer);
     console.error("Erro ao buscar produto:", error);
     res.status(500).json({ error: "Erro ao buscar produto" });
   }
 }
 
-export async function getProdutoByIdFast(
+interface ProdutoResponse {
+  id: string;
+  nome: string;
+  descricao: string | null;
+  foto: string | null;
+  preco: number;
+  notaGeral: number;
+  qtdAvaliacoes: number;
+  avaliacoes: Array<{
+    id: string;
+    nota: number;
+    comentario: string | null;
+    createdAt: Date;
+  }>;
+}
+
+// Rota COM cache (otimizada)
+export async function getProdutoByIdComCache(
   req: Request<{ id: string }>,
   res: Response
 ) {
+  const { id } = req.params;
+  const timer = `[COM CACHE] Produto ${id}`;
+  console.time(timer);
+
   try {
-    const { id } = req.params;
-    const startTime = Date.now();
+    const cacheKey = `produto:${id}`;
 
-    const cacheKey = CACHE_KEYS.produto(id);
-    const cached = await getCache<ProdutoResponse>(cacheKey);
-
+    // Tentar buscar do cache primeiro
+    const cached = await getCache(cacheKey);
     if (cached) {
-      const elapsed = Date.now() - startTime;
-      res.setHeader("X-Cache", "HIT");
-      res.setHeader("X-Response-Time", `${elapsed}ms`);
-      return res.json(cached);
+      console.log(`✅ Cache HIT - Produto ${id}`);
+      console.timeEnd(timer);
+      res.json(cached);
+      return;
     }
 
+    console.log(`❌ Cache MISS - Produto ${id}`);
+
+    // Se não estiver no cache, busca do banco
     const produto = await produtosService.getProdutoById(id);
 
     if (!produto) {
@@ -70,7 +97,7 @@ export async function getProdutoByIdFast(
       return;
     }
 
-    const response: ProdutoResponse = {
+    const response = {
       id: produto.id,
       nome: produto.nome,
       descricao: produto.descricao,
@@ -93,35 +120,19 @@ export async function getProdutoByIdFast(
       ),
     };
 
+    // Salvar no cache por 1 hora (3600 segundos)
     await setCache(cacheKey, response, 3600);
 
-    const elapsed = Date.now() - startTime;
-    res.setHeader("X-Cache", "MISS");
-    res.setHeader("X-Response-Time", `${elapsed}ms`);
+    console.timeEnd(timer);
     res.json(response);
   } catch (error) {
-    console.error("Erro ao buscar produto (fast):", error);
+    console.timeEnd(timer);
+    console.error("Erro ao buscar produto:", error);
     res.status(500).json({ error: "Erro ao buscar produto" });
   }
 }
 
-interface ProdutoResponse {
-  id: string;
-  nome: string;
-  descricao: string | null;
-  foto: string | null;
-  preco: number;
-  notaGeral: number;
-  qtdAvaliacoes: number;
-  avaliacoes: Array<{
-    id: string;
-    nota: number;
-    comentario: string | null;
-    createdAt: Date;
-  }>;
-}
-
 export default {
   getProdutoById,
-  getProdutoByIdFast,
+  getProdutoByIdComCache,
 };

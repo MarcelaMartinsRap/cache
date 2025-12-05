@@ -1,25 +1,46 @@
-export async function getCache<T>(key: string): Promise<T | null> {
-  console.log(`❌ CACHE MISS (Redis desabilitado): ${key}`);
-  return null;
+import { Redis } from "ioredis";
+
+const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
+
+redis.on("connect", () => {
+  console.log("✅ Conectado ao Redis");
+});
+
+redis.on("error", (err: Error) => {
+  console.error("❌ Erro no Redis:", err);
+});
+
+export async function getCache(key: string): Promise<any | null> {
+  try {
+    const data = await redis.get(key);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.error("Erro ao buscar cache:", error);
+    return null;
+  }
 }
 
-export async function setCache<T>(
+export async function setCache(
   key: string,
-  data: T,
+  value: any,
   ttlSeconds: number = 3600
 ): Promise<void> {
-  console.log(`💾 CACHE SET (Redis desabilitado): ${key}`);
+  try {
+    await redis.setex(key, ttlSeconds, JSON.stringify(value));
+  } catch (error) {
+    console.error("Erro ao salvar cache:", error);
+  }
 }
 
 export async function deleteCache(key: string): Promise<void> {
-  console.log(`🗑️ CACHE DELETE (Redis desabilitado): ${key}`);
+  try {
+    await redis.del(key);
+  } catch (error) {
+    console.error("Erro ao deletar cache:", error);
+  }
 }
 
-export async function deleteCachePattern(pattern: string): Promise<void> {
-  console.log(`🗑️ CACHE DELETE PATTERN (Redis desabilitado): ${pattern}`);
-}
-
-export const CACHE_KEYS = {
-  produto: (id: string) => `produto:${id}`,
-  produtoAvaliacoes: (id: string) => `produto:${id}:avaliacoes`,
-};
+export default redis;
