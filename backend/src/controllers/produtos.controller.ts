@@ -7,7 +7,7 @@ export async function getProdutoById(
   res: Response
 ) {
   const { id } = req.params;
-  const timer = `[SEM CACHE] Produto ${id}`;
+# alteração linha 10
   console.time(timer);
 
   try {
@@ -17,7 +17,7 @@ export async function getProdutoById(
       res.status(404).json({ error: "Produto não encontrado" });
       return;
     }
-
+# alteração linha 20
     const response = {
       id: produto.id,
       nome: produto.nome,
