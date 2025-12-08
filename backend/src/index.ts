@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.get("/", (_req, res) => {
   res.json({ ok: true });
-});
+# alteração linha 10
 
 app.use("/api/produtos", produtosRouter);
 
